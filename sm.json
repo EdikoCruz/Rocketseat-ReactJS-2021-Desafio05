@@ -1,7 +1,0 @@
-{
-  "apiEndpoint": "https://rocketseat-reactjs-2021-desafio05.prismic.io/api/v2",
-  "libraries": [
-    "@/slices"
-  ],
-  "_latest": "0.7.1"
-}

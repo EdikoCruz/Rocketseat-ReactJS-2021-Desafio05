@@ -1,11 +1,28 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import mockRouter from 'next-router-mock';
-import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider';
+import { RouterContext } from 'next/dist/next-server/lib/router-context';
 
 import Header from '../../components/Header';
 
+const mockedPush = jest.fn();
+let RouterWrapper;
 
 describe('Header', () => {
+  beforeAll(() => {
+    mockedPush.mockImplementation(() => Promise.resolve());
+    const MockedRouterContext = RouterContext as React.Context<unknown>;
+    RouterWrapper = ({ children }): JSX.Element => {
+      return (
+        <MockedRouterContext.Provider
+          value={{
+            push: mockedPush,
+          }}
+        >
+          {children}
+        </MockedRouterContext.Provider>
+      );
+    };
+  });
+
   it('should be able to render logo', () => {
     render(<Header />);
 
@@ -14,13 +31,17 @@ describe('Header', () => {
 
   it('should be able to navigate to home page after a click', () => {
     render(<Header />, {
-      wrapper: MemoryRouterProvider,
+      wrapper: RouterWrapper,
     });
 
     const secondLink = screen.getByAltText('logo');
 
     fireEvent.click(secondLink);
 
-    expect(mockRouter.asPath).toEqual('/')
+    expect(mockedPush).toHaveBeenCalledWith(
+      '/',
+      expect.anything(),
+      expect.anything()
+    );
   });
 });

@@ -3,10 +3,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { GetStaticPropsContext } from 'next';
 import { ParsedUrlQuery } from 'querystring';
-
-import mockRouter from 'next-router-mock';
-import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider';
-
+import { RouterContext } from 'next/dist/next-server/lib/router-context';
 
 import { getPrismicClient } from '../../services/prismic';
 import App, { getStaticProps } from '../../pages';
@@ -59,14 +56,30 @@ const mockedGetByTypeReturn = {
   ],
 };
 
-// jest.mock('@prismicio/client');
+jest.mock('@prismicio/client');
 jest.mock('../../services/prismic');
 
 const mockedPrismic = getPrismicClient as jest.Mock;
 const mockedFetch = jest.spyOn(window, 'fetch') as jest.Mock;
+const mockedPush = jest.fn();
+let RouterWrapper;
 
 describe('Home', () => {
   beforeAll(() => {
+    mockedPush.mockImplementation(() => Promise.resolve());
+    const MockedRouterContext = RouterContext as React.Context<unknown>;
+    RouterWrapper = ({ children }): JSX.Element => {
+      return (
+        <MockedRouterContext.Provider
+          value={{
+            push: mockedPush,
+          }}
+        >
+          {children}
+        </MockedRouterContext.Provider>
+      );
+    };
+
     mockedPrismic.mockReturnValue({
       getByType: () => {
         return Promise.resolve(mockedGetByTypeReturn);
@@ -137,16 +150,27 @@ describe('Home', () => {
     const postsPagination = mockedGetByTypeReturn;
 
     render(<App postsPagination={postsPagination} />, {
-      wrapper: MemoryRouterProvider,
+      wrapper: RouterWrapper,
     });
 
     const firstPostTitle = screen.getByText('Como utilizar Hooks');
     const secondPostTitle = screen.getByText('Criando um app CRA do zero');
 
     fireEvent.click(firstPostTitle);
-    expect(mockRouter.asPath).toEqual('/post/como-utilizar-hooks')
     fireEvent.click(secondPostTitle);
-    expect(mockRouter.asPath).toEqual('/post/criando-um-app-cra-do-zero')
+
+    expect(mockedPush).toHaveBeenNthCalledWith(
+      1,
+      '/post/como-utilizar-hooks',
+      expect.anything(),
+      expect.anything()
+    );
+    expect(mockedPush).toHaveBeenNthCalledWith(
+      2,
+      '/post/criando-um-app-cra-do-zero',
+      expect.anything(),
+      expect.anything()
+    );
   });
 
   it('should be able to load more posts if available', async () => {

@@ -6,23 +6,7 @@ import {
 } from 'next';
 import { ParsedUrlQuery, parse } from 'querystring';
 
-// import { useRouter } from 'next/router';
-const useRouter = jest
-.spyOn(require("next/router"), "useRouter")
-.mockReturnValue({
-  query: {},
-    pathname: '/',
-    asPath: '/',
-    events: {
-      emit: jest.fn(),
-      on: jest.fn(),
-      off: jest.fn(),
-    },
-    push: jest.fn(() => Promise.resolve(true)),
-    prefetch: jest.fn(() => Promise.resolve(true)),
-    replace: jest.fn(() => Promise.resolve(true)),
-});
-
+import { useRouter } from 'next/router';
 import { getPrismicClient } from '../../services/prismic';
 import Post, { getStaticProps, getStaticPaths } from '../../pages/post/[slug]';
 
@@ -31,7 +15,6 @@ interface Post {
   data: {
     title: string;
     banner: {
-      alt: string;
       url: string;
     };
     author: string;
@@ -78,7 +61,6 @@ const mockedGetByUIDReturn = {
     subtitle: 'Pensando em sincronização em vez de ciclos de vida',
     author: 'Joseph Oliveira',
     banner: {
-      alt: 'banner',
       url:
         'https://images.prismic.io/criando-projeto-do-zero/95494d57-eee2-4adb-9883-befa9829abca_christopher-gower-m_HRfLhgABo-unsplash.jpg?auto=compress,format',
     },
@@ -212,9 +194,9 @@ const mockedGetByUIDReturn = {
   },
 };
 
-// jest.mock('@prismicio/client');
+jest.mock('@prismicio/client');
 jest.mock('../../services/prismic');
-// jest.mock('next/router');
+jest.mock('next/router');
 const mockedUseRouter = useRouter as jest.Mock;
 const mockedPrismic = getPrismicClient as jest.Mock;
 
