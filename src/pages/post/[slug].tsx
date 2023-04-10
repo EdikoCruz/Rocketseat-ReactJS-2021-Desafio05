@@ -7,6 +7,7 @@ import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 import { RichText } from 'prismic-dom';
+import { useRouter } from 'next/router';
 
 import { getPrismicClient } from '../../services/prismic';
 
@@ -36,11 +37,14 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps) {
+  const router = useRouter();
+
   return (
     <>
       {
-        post
-          ? <>
+        router.isFallback
+          ? <p>Carregando...</p>
+          : <>
             <img
               className={styles.banner}
               src={post.data.banner.url}
@@ -65,14 +69,14 @@ export default function Post({ post }: PostProps) {
                 <div>
                   <FiClock />
                   {
-                    Math.ceil(post.data.content.reduce((length, item) => length + RichText.asText(item.body).length, 0) / 200)
+                    Math.ceil(post.data.content.reduce((length, item) => length + RichText.asText(item.body).split(" ").length, 0) / 200)
                   } min
                 </div>
               </div>
 
               {
                 post.data.content.map(item => (
-                  <section>
+                  <section key={item.heading}>
                     <h2>{item.heading}</h2>
                     <div
                       dangerouslySetInnerHTML={{ __html: RichText.asHtml(item.body) }}
@@ -82,7 +86,6 @@ export default function Post({ post }: PostProps) {
               }
             </article>
           </>
-          : <p>Carregando...</p>
       }
     </>
   )
