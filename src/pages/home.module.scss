@@ -1,0 +1,20 @@
+.post {
+    padding-bottom: 3rem;
+
+    h2 {
+        font-size: 1.75rem;
+        color: var(--color-heading);
+    }
+
+    p {
+        margin: 0.5rem 0 1.5rem;
+        font-size: 1.125rem;
+    }
+}
+
+.nextPage {
+    padding-bottom: 3rem;
+    color: var(--color-highlight);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
